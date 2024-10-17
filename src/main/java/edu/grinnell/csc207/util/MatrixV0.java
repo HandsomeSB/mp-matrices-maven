@@ -194,7 +194,7 @@ public class MatrixV0<T> implements Matrix<T> {
     if(vals.length != this.height()) { 
       throw new ArraySizeException();
     }
-    if(col < 0 || col >= this.width()) { 
+    if(col < 0 || col > this.width()) { 
       throw new IndexOutOfBoundsException();
     }
 
@@ -203,14 +203,16 @@ public class MatrixV0<T> implements Matrix<T> {
     for(int i = 0; i < this.height(); ++i) { 
       T[] newRow = (T[]) new Object[this.width() + 1];
       for(int j = 0; j < col; ++j) { 
-        newRow[j] = newMatrix[i][j];
+        newRow[j] = this.val[i][j];
       }
       newRow[col] = vals[i];
       for(int j = col + 1; j < newMatrix[0].length; ++j) { 
-        newRow[j] = newMatrix[i][j - 1];
+        newRow[j] = this.val[i][j - 1];
       }
       newMatrix[i] = newRow;
     }
+
+    this.val = newMatrix;
   } // insertCol(int, T[])
 
   /**
@@ -222,8 +224,20 @@ public class MatrixV0<T> implements Matrix<T> {
    * @throws IndexOutOfBoundsException
    *   If the row is negative or greater than or equal to the height.
    */
-  public void deleteRow(int row) {
-    // STUB
+  @SuppressWarnings("unchecked")
+  public void deleteRow(int row) throws IndexOutOfBoundsException{
+    if(row < 0 || row >= this.height()) { 
+      throw new IndexOutOfBoundsException();
+    }
+
+    T[][] newMatrix = (T[][]) new Object[this.height() - 1][this.width()];
+    for(int i = 0; i < row; ++i) { 
+      newMatrix[i] = this.val[i];
+    }
+    for(int i = row + 1; i < this.height(); ++i) { 
+      newMatrix[i - 1] = this.val[i];
+    }
+    this.val = newMatrix;
   } // deleteRow(int)
 
   /**
@@ -235,8 +249,27 @@ public class MatrixV0<T> implements Matrix<T> {
    * @throws IndexOutOfBoundsException
    *   If the column is negative or greater than or equal to the width.
    */
+  @SuppressWarnings("unchecked")
   public void deleteCol(int col) {
-    // STUB
+    if(col < 0 || col > this.width()) { 
+      throw new IndexOutOfBoundsException();
+    }
+
+    T[][] newMatrix = (T[][]) new Object[this.height()][this.width() - 1];
+
+    for(int i = 0; i < this.height(); ++i) { 
+      T[] newRow = (T[]) new Object[this.width() - 1];
+      for(int j = 0; j < col; ++j) { 
+        newRow[j] = this.val[i][j];
+      }
+
+      for(int j = col + 1; j < newMatrix[0].length; ++j) { 
+        newRow[j - 1] = this.val[i][j];
+      }
+      newMatrix[i] = newRow;
+    }
+
+    this.val = newMatrix;
   } // deleteCol(int)
 
   /**
@@ -258,7 +291,7 @@ public class MatrixV0<T> implements Matrix<T> {
    */
   public void fillRegion(int startRow, int startCol, int endRow, int endCol,
       T val) {
-    // STUB
+    this.fillLine(startRow, startCol, 1, 1, endRow, endCol, val);
   } // fillRegion(int, int, int, int, T)
 
   /**
@@ -284,7 +317,11 @@ public class MatrixV0<T> implements Matrix<T> {
    */
   public void fillLine(int startRow, int startCol, int deltaRow, int deltaCol,
       int endRow, int endCol, T val) {
-    // STUB
+        for(int i = startRow; i < endRow; i+=deltaRow) { 
+          for(int j = startCol; j < endCol; j+=deltaCol) { 
+            this.val[i][j] = val;
+          }
+        }
   } // fillLine(int, int, int, int, int, int, T)
 
   /**
@@ -294,8 +331,14 @@ public class MatrixV0<T> implements Matrix<T> {
    *
    * @return a copy of the matrix.
    */
-  public Matrix clone() {
-    return this;        // STUB
+  public Matrix<T> clone() {
+    Matrix<T> newMatrix = new MatrixV0<T>(this.width(), this.height());
+    for(int i = 0; i < this.height(); ++i) { 
+      for(int j = 0; j < this.width(); ++j) { 
+        newMatrix.set(i, j, this.val[i][j]);
+      }
+    }
+    return newMatrix;
   } // clone()
 
   /**
@@ -307,8 +350,33 @@ public class MatrixV0<T> implements Matrix<T> {
    * @return true if the other object is a matrix with the same width,
    * height, and equal elements; false otherwise.
    */
+  @SuppressWarnings("unchecked")
   public boolean equals(Object other) {
-    return this == other;       // STUB
+    return other instanceof Matrix && this.equals((Matrix<T>) other);
+  } // equals(Object)
+
+  /**
+   * Determine if this object is equal to another object.
+   *
+   * @param other
+   *   The object to compare.
+   *
+   * @return true if the other object is a matrix with the same width,
+   * height, and equal elements; false otherwise.
+   */
+  public boolean equals(Matrix other) {
+    if(this.height() != other.height() || this.width() != other.width()) { 
+      return false;
+    }
+
+    for(int i = 0; i < this.height(); ++i) { 
+      for(int j = 0; j < this.width(); ++j) { 
+        if(!this.val[i][j].equals(other.get(i, j))){
+          return false;
+        }
+      }
+    }
+    return true;
   } // equals(Object)
 
   /**
