@@ -1,5 +1,7 @@
 package edu.grinnell.csc207.util;
 
+import java.util.Arrays;
+
 /**
  * An implementation of two-dimensional matrices.
  *
@@ -14,6 +16,7 @@ public class MatrixV0<T> implements Matrix<T> {
   // | Fields |
   // +--------+
   T[][] val;
+  final T defaultVal; 
   // +--------------+------------------------------------------------
   // | Constructors |
   // +--------------+
@@ -35,7 +38,8 @@ public class MatrixV0<T> implements Matrix<T> {
   @SuppressWarnings("unchecked")
   public MatrixV0(int width, int height, T def) {
     this.val = (T[][]) new Object[height][width];
-    fillLine(0, 0, 1, 1, height, width, def);
+    this.defaultVal = def;
+    fillRegion(0, 0, height, width, def);
   } // MatrixV0(int, int, T)
 
   /**
@@ -122,7 +126,9 @@ public class MatrixV0<T> implements Matrix<T> {
   @SuppressWarnings("unchecked")
   public void insertRow(int row) throws IndexOutOfBoundsException {
     try {
-      this.insertRow(row, (T[]) new Object[this.width()]);
+      T[] li = (T[]) new Object[this.width()];
+      Arrays.fill(li, this.defaultVal);
+      this.insertRow(row, li);
     } catch (ArraySizeException e) { }
     //STUB, throw IndexOutOfBoundsException
   } // insertRow(int)
@@ -144,6 +150,9 @@ public class MatrixV0<T> implements Matrix<T> {
   public void insertRow(int row, T[] vals) throws ArraySizeException, IndexOutOfBoundsException {
     if(vals.length != this.width()) { 
       throw new ArraySizeException();
+    }
+    if(row < 0 || row > this.height()) { 
+      throw new IndexOutOfBoundsException();
     }
 
     T[][] newMatrix = (T[][]) new Object[this.height() + 1][this.width()];
@@ -169,7 +178,9 @@ public class MatrixV0<T> implements Matrix<T> {
   @SuppressWarnings("unchecked")
   public void insertCol(int col) throws IndexOutOfBoundsException{
     try {
-      this.insertCol(col, (T[]) new Object[this.height()]);
+      T[] li = (T[]) new Object[this.height()];
+      Arrays.fill(li, this.defaultVal);
+      this.insertCol(col, li);
     } catch (ArraySizeException e) {
       // It doesn't happen
     }
@@ -263,7 +274,7 @@ public class MatrixV0<T> implements Matrix<T> {
         newRow[j] = this.val[i][j];
       }
 
-      for(int j = col + 1; j < newMatrix[0].length; ++j) { 
+      for(int j = col + 1; j < this.width(); ++j) { 
         newRow[j - 1] = this.val[i][j];
       }
       newMatrix[i] = newRow;
@@ -291,7 +302,11 @@ public class MatrixV0<T> implements Matrix<T> {
    */
   public void fillRegion(int startRow, int startCol, int endRow, int endCol,
       T val) {
-    this.fillLine(startRow, startCol, 1, 1, endRow, endCol, val);
+        for(int i = startRow; i < endRow; i+=1) { 
+          for(int j = startCol; j < endCol; j+=1) { 
+            this.val[i][j] = val;
+          }
+        }
   } // fillRegion(int, int, int, int, T)
 
   /**
@@ -317,11 +332,14 @@ public class MatrixV0<T> implements Matrix<T> {
    */
   public void fillLine(int startRow, int startCol, int deltaRow, int deltaCol,
       int endRow, int endCol, T val) {
-        for(int i = startRow; i < endRow; i+=deltaRow) { 
-          for(int j = startCol; j < endCol; j+=deltaCol) { 
+        for(int i = startRow, j = startCol; i < endRow && j < endCol; i+=deltaRow, j+=deltaCol) { 
             this.val[i][j] = val;
-          }
         }
+        // for(int i = startRow; i < endRow; i+=deltaRow) { 
+        //   for(int j = startCol; j < endCol; j+=deltaCol) { 
+        //     this.val[i][j] = val;
+        //   }
+        // }
   } // fillLine(int, int, int, int, int, int, T)
 
   /**
